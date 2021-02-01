@@ -14,9 +14,12 @@ namespace REngine {
     };
 
     class Event {
-
+    public:
         virtual EventType GetEventType() = 0;
     };
+
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }
+
 
     class EventDispatcher {
         template<typename T>
@@ -26,7 +29,9 @@ namespace REngine {
 
         template<typename T>
         bool Dispatch(EventFn<T> func) {
-            func(*(T*)&event);
+            if (event.GetEventType() == T::GetStaticType()) {
+                func(*(T*)&event);
+            }
             return false;
         }
 

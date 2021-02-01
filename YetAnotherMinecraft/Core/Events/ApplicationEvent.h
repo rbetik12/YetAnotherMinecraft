@@ -4,8 +4,11 @@
 
 namespace REngine {
     class WindowCloseEvent : public Event {
-        virtual EventType GetEventType() {
+    public:
+        virtual EventType GetEventType() override {
             return EventType::WindowClose;
         }
+
+        EVENT_CLASS_TYPE(WindowClose);
     };
 }

@@ -2,6 +2,8 @@
 #include "Window.h"
 #include "../Core.h"
 #include "../Events/ApplicationEvent.h"
+#include "../Events/KeyEvent.h"
+#include "../Events/MouseEvent.h"
 
 namespace REngine {
     Window::Window(uint32_t width, uint32_t height, std::string windowName) : width(width), height(height) {
@@ -40,7 +42,66 @@ namespace REngine {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             WindowCloseEvent e;
             data.callback(e);
-        });
+                                   });
+
+        glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            switch (action) {
+            case GLFW_PRESS: {
+                KeyPressedEvent event(key, 0);
+                data.callback(event);
+                break;
+            }
+            case GLFW_RELEASE: {
+                KeyReleasedEvent event(key);
+                data.callback(event);
+                break;
+            }
+            case GLFW_REPEAT: {
+                KeyPressedEvent event(key, 1);
+                data.callback(event);
+                break;
+            }
+            }
+                           });
+
+        glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int keycode) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            KeyTypedEvent event(keycode);
+            data.callback(event);
+                            });
+
+        glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            switch (action) {
+            case GLFW_PRESS: {
+                MouseButtonPressedEvent event(button);
+                data.callback(event);
+                break;
+            }
+            case GLFW_RELEASE: {
+                MouseButtonReleasedEvent event(button);
+                data.callback(event);
+                break;
+            }
+            }
+                                   });
+
+        glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            MouseScrolledEvent event(xOffset, yOffset);
+            data.callback(event);
+                              });
+
+        glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            MouseMovedEvent event(xPos, yPos);
+            data.callback(event);
+                                 });
     }
 
     bool Window::IsShouldClose() {

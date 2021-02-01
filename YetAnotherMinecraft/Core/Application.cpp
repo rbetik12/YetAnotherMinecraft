@@ -32,4 +32,9 @@ namespace REngine {
         R_CORE_TRACE("Closing window!");
         return true;
     }
+
+    bool Application::OnMouseMove(MouseMovedEvent& e) {
+        R_CORE_TRACE("Mouse move. X: {0} Y: {1}", e.GetX(), e.GetY());
+        return true;
+    }
 }

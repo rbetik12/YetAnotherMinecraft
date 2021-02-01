@@ -2,6 +2,7 @@
 #include <memory>
 #include "Window/Window.h"
 #include "Events/ApplicationEvent.h"
+#include "Events/MouseEvent.h"
 
 namespace REngine {
     class Application {
@@ -17,5 +18,6 @@ namespace REngine {
         std::unique_ptr<Window> window;
         bool isRunning = false;
         bool OnWindowClose(WindowCloseEvent &e);
+        bool OnMouseMove(MouseMovedEvent& e);
     };
 }
