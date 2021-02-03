@@ -12,8 +12,6 @@ namespace REngine {
     }
 
     VertexBuffer::~VertexBuffer() {
-        glDeleteBuffers(GL_ARRAY_BUFFER, &id);
-        R_CORE_TRACE("Deleted vertex buffer with id {0}", id);
     }
 
     void VertexBuffer::Bind() const {

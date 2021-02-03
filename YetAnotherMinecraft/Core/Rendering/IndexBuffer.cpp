@@ -3,7 +3,7 @@
 #include "../Log.h"
 
 namespace REngine {
-    IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count) {
+    IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count): count(count) {
         glGenBuffers(1, &id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW);
@@ -12,8 +12,6 @@ namespace REngine {
     }
 
     IndexBuffer::~IndexBuffer() {
-        glDeleteBuffers(GL_ELEMENT_ARRAY_BUFFER, &id);
-        R_CORE_TRACE("Deleted index buffer with id: {0}", id);
     }
 
     void IndexBuffer::Bind() const {

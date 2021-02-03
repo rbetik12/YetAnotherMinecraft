@@ -1,5 +1,12 @@
+#include "Debug/Debug.h"
 #include "Application.h"
 #include "Log.h"
+#include "Rendering/Renderer.h"
+#include "Rendering/Shader.h"
+#include "Rendering/VertexBuffer.h"
+#include "Rendering/VertexBufferLayout.h"
+#include "Rendering/VertexArray.h"
+#include "Rendering/IndexBuffer.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -15,7 +22,36 @@ namespace REngine {
     }
 
     void Application::Run() {
+        Debug::Init();
+        Shader basicShader("resources/shaders/Basic.vert", "resources/shaders/Basic.frag");
+
+        float quadVertices[] = {
+            -1.f, -1.f, 0.0f,
+            1.f, -1.f, 0.0f, 
+            1.f, 1.f, 0.0f, 
+            -1.f, 1.f, 0.0f,
+        };
+
+        uint32_t quadIndexes[] = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        VertexBuffer quadVBO(&quadVertices, sizeof(quadVertices));
+        VertexBufferLayout quadVBOLayout;
+        quadVBOLayout.Push<float>(3);
+        VertexArray quadVAO;
+        quadVAO.AddBuffer(quadVBO, quadVBOLayout);
+        IndexBuffer quadEBO(quadIndexes, sizeof(quadIndexes) / sizeof(uint32_t));
+
         while (isRunning) {
+            Renderer::Clear();
+
+            basicShader.Bind();
+            quadVAO.Bind();
+            quadEBO.Bind();
+            Renderer::Draw(quadVAO, quadEBO, basicShader);
+
 
             window->OnUpdate();
         }
