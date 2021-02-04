@@ -7,6 +7,7 @@
 #include "Rendering/VertexBufferLayout.h"
 #include "Rendering/VertexArray.h"
 #include "Rendering/IndexBuffer.h"
+#include "Time.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -26,11 +27,14 @@ namespace REngine {
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
 
+        camera.reset(new FPSCamera(glm::vec3(0), glm::vec3(0.0f, 1.0f, 0.0f)));
+
         isRunning = true;
     }
 
     void Application::Run() {
         gui.reset(ImGuiUi::Create());
+
         Shader basicShader("resources/shaders/Basic.vert", "resources/shaders/Basic.frag");
 
         float quadVertices[] = {
@@ -53,6 +57,8 @@ namespace REngine {
         IndexBuffer quadEBO(quadIndexes, sizeof(quadIndexes) / sizeof(uint32_t));
 
         while (isRunning) {
+            Time::OnUpdate();
+            camera->OnUpdate();
             Renderer::Clear();
 
             basicShader.Bind();
@@ -71,6 +77,8 @@ namespace REngine {
     void Application::OnEvent(Event& event) {
         EventDispatcher e(event);
         e.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+        
+        camera->OnEvent(event);
     }
     Window* Application::GetWindow() {
         return window.get();
@@ -82,7 +90,10 @@ namespace REngine {
     }
 
     bool Application::OnMouseMove(MouseMovedEvent& e) {
-        R_CORE_TRACE("Mouse move. X: {0} Y: {1}", e.GetX(), e.GetY());
+        return true;
+    }
+
+    bool Application::OnKeyPressed(KeyPressedEvent& e) {
         return true;
     }
 
