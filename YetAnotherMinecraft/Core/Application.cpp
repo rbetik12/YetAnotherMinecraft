@@ -10,19 +10,27 @@
 
 namespace REngine {
     Application* Application::Create() {
-        return new Application();
+        instance = new Application();
+        return instance;
+    }
+
+    Application* Application::Get() {
+        R_CORE_ASSERT(instance, "Application instance is null!");
+        return instance;
     }
 
     void Application::Init() {
         Log::init();
+        
         window.reset(new Window(1920, 1080, "YetAnotherMinecraft"));
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+        Debug::Init();
 
         isRunning = true;
     }
 
     void Application::Run() {
-        Debug::Init();
+        gui.reset(ImGuiUi::Create());
         Shader basicShader("resources/shaders/Basic.vert", "resources/shaders/Basic.frag");
 
         float quadVertices[] = {
@@ -52,6 +60,7 @@ namespace REngine {
             quadEBO.Bind();
             Renderer::Draw(quadVAO, quadEBO, basicShader);
 
+            gui->OnUpdate();
 
             window->OnUpdate();
         }
@@ -63,6 +72,9 @@ namespace REngine {
         EventDispatcher e(event);
         e.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
     }
+    Window* Application::GetWindow() {
+        return window.get();
+    }
     bool Application::OnWindowClose(WindowCloseEvent& e) {
         isRunning = false;
         R_CORE_TRACE("Closing window!");
@@ -73,4 +85,6 @@ namespace REngine {
         R_CORE_TRACE("Mouse move. X: {0} Y: {1}", e.GetX(), e.GetY());
         return true;
     }
+
+    Application* Application::instance = nullptr;
 }

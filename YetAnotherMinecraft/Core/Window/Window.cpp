@@ -119,4 +119,8 @@ namespace REngine {
         glfwPollEvents();
         SwapBuffers();
     }
+
+    GLFWwindow* Window::GetWindow() {
+        return window;
+    }
 }

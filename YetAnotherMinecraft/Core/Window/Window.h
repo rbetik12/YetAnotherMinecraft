@@ -16,6 +16,7 @@ namespace REngine {
             data.callback = func;
         }
         void OnUpdate();
+        GLFWwindow* GetWindow();
     private:
         GLFWwindow* window = nullptr;
         uint32_t width;
