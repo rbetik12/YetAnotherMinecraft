@@ -10,6 +10,7 @@
 #include "Time.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtx/transform.hpp>
+#include <imgui.h>
 
 namespace REngine {
     Application* Application::Create() {
@@ -110,7 +111,14 @@ namespace REngine {
             cubeVAO.Bind();
             Renderer::Draw(cubeVAO, cubeVBO, basicShader);
 
-            gui->OnUpdate();
+            gui->Begin();
+            {
+                ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+                ImGui::Begin("Debug");
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                ImGui::End();
+            }
+            gui->End();
 
             window->OnUpdate();
         }

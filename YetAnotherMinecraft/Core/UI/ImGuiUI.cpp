@@ -43,22 +43,17 @@ namespace REngine{
         EventDispatcher dispatcher(e);
     }
 
-    void ImGuiUi::OnUpdate() {
+    void ImGuiUi::Begin() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+    }
 
-        {
-            ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-            ImGui::Begin("Debug");
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
+    void ImGuiUi::End() {
         ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(Application::Get()->GetWindow()->GetWindow(), &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
+        int displayW, displayH;
+        glfwGetFramebufferSize(Application::Get()->GetWindow()->GetWindow(), &displayW, &displayH);
+        glViewport(0, 0, displayW, displayH);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 

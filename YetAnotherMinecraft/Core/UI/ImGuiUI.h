@@ -8,7 +8,8 @@ namespace REngine {
         ~ImGuiUi();
 
         void OnEvent(Event &e);
-        void OnUpdate();
+        void Begin();
+        void End();
     private:
         ImGuiUi();
         void Init();
