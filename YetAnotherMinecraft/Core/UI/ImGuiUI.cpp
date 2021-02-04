@@ -59,8 +59,6 @@ namespace REngine{
         int display_w, display_h;
         glfwGetFramebufferSize(Application::Get()->GetWindow()->GetWindow(), &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 

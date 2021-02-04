@@ -11,22 +11,20 @@ namespace REngine {
 
     FPSCamera::~FPSCamera() {}
 
-    void FPSCamera::LookAt() {}
-
     void FPSCamera::OnUpdate() {
         actualSpeed = movementSpeed * Time::deltaTime;
     }
 
     glm::mat4 FPSCamera::GetViewMatrix() {
-        return glm::mat4();
+        return glm::lookAt(position, position + front, up);
     }
 
     glm::vec3 FPSCamera::GetPosition() {
-        return glm::vec3();
+        return position;
     }
 
     glm::vec3 FPSCamera::GetFront() {
-        return glm::vec3();
+        return front;
     }
 
     void FPSCamera::UpdateVectors() {
@@ -49,10 +47,10 @@ namespace REngine {
     bool FPSCamera::OnKeyPressed(KeyPressedEvent& e) {
         switch (e.GetKeyCode()) {
         case GLFW_KEY_W:
-            position += actualSpeed;
+            position += actualSpeed * front;
             break;
         case GLFW_KEY_S:
-            position -= actualSpeed;
+            position -= actualSpeed * front;
             break;
         case GLFW_KEY_A:
             position -= glm::normalize(glm::cross(front, up)) * actualSpeed;
@@ -62,10 +60,29 @@ namespace REngine {
             break;
         }
 
-        UpdateVectors();
         return true;
     }
     bool FPSCamera::OnMouseMove(MouseMovedEvent& e) {
+        if (prevXMousePos == -1) {
+            prevXMousePos = e.GetX();
+            prevYMousePos = e.GetY();
+        }
+        float xOffset = e.GetX() - prevXMousePos;
+        float yOffset = prevYMousePos - e.GetY();
+        xOffset *= sensitivity;
+        yOffset *= sensitivity;
+
+        yaw += xOffset;
+        pitch += yOffset;
+
+
+        if (pitch > 89.0f)
+            pitch = 89.0f;
+        if (pitch < -89.0f)
+            pitch = -89.0f;
+        UpdateVectors();
+        prevXMousePos = e.GetX();
+        prevYMousePos = e.GetY();
         return true;
     }
 }

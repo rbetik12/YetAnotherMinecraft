@@ -17,6 +17,8 @@ namespace REngine {
         }
         void OnUpdate();
         GLFWwindow* GetWindow();
+        uint32_t GetWidth();
+        uint32_t GetHeight();
     private:
         GLFWwindow* window = nullptr;
         uint32_t width;

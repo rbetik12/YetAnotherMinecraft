@@ -11,7 +11,6 @@ namespace REngine {
         FPSCamera(glm::vec3 position, glm::vec3 worldUp);
         ~FPSCamera();
 
-        void LookAt();
         void OnUpdate();
         void OnEvent(Event& e);
         glm::mat4 GetViewMatrix();
@@ -30,6 +29,8 @@ namespace REngine {
         float movementSpeed = 1.0f;
         float sensitivity = 0.25f;
         float actualSpeed = 1.0f;
+        float prevXMousePos = -1;
+        float prevYMousePos = -1;
 
         void UpdateVectors();
         bool OnKeyPressed(KeyPressedEvent& e);

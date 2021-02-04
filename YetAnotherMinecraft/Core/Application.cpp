@@ -8,6 +8,8 @@
 #include "Rendering/VertexArray.h"
 #include "Rendering/IndexBuffer.h"
 #include "Time.h"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace REngine {
     Application* Application::Create() {
@@ -27,7 +29,7 @@ namespace REngine {
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
 
-        camera.reset(new FPSCamera(glm::vec3(0), glm::vec3(0.0f, 1.0f, 0.0f)));
+        camera.reset(new FPSCamera(glm::vec3(1.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         isRunning = true;
     }
@@ -35,36 +37,78 @@ namespace REngine {
     void Application::Run() {
         gui.reset(ImGuiUi::Create());
 
-        Shader basicShader("resources/shaders/Basic.vert", "resources/shaders/Basic.frag");
+        Shader basicShader("resources/shaders/BasicProjection/Basic.vert", "resources/shaders/BasicProjection/Basic.frag");
 
-        float quadVertices[] = {
-            -1.f, -1.f, 0.0f,
-            1.f, -1.f, 0.0f, 
-            1.f, 1.f, 0.0f, 
-            -1.f, 1.f, 0.0f,
+        float vertices[] = {
+            // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
         };
 
-        uint32_t quadIndexes[] = {
-            0, 1, 2,
-            2, 3, 0
-        };
-
-        VertexBuffer quadVBO(&quadVertices, sizeof(quadVertices));
-        VertexBufferLayout quadVBOLayout;
-        quadVBOLayout.Push<float>(3);
-        VertexArray quadVAO;
-        quadVAO.AddBuffer(quadVBO, quadVBOLayout);
-        IndexBuffer quadEBO(quadIndexes, sizeof(quadIndexes) / sizeof(uint32_t));
+        VertexBuffer cubeVBO(&vertices, sizeof(vertices));
+        VertexBufferLayout cubeVBOLayout;
+        cubeVBOLayout.Push<float>(3);
+        cubeVBOLayout.Push<float>(3);
+        cubeVBOLayout.Push<float>(2);
+        VertexArray cubeVAO;
+        cubeVAO.AddBuffer(cubeVBO, cubeVBOLayout);
 
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
             Renderer::Clear();
 
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 100.0f);
+            glm::mat4 view = camera->GetViewMatrix();
+
             basicShader.Bind();
-            quadVAO.Bind();
-            quadEBO.Bind();
-            Renderer::Draw(quadVAO, quadEBO, basicShader);
+            basicShader.SetUniformMat4f("projection", projection);
+            basicShader.SetUniformMat4f("view", view);
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, glm::vec3(0));
+            model = glm::scale(model, glm::vec3(1.0f));
+            basicShader.SetUniformMat4f("model", model);
+            cubeVAO.Bind();
+            Renderer::Draw(cubeVAO, cubeVBO, basicShader);
 
             gui->OnUpdate();
 
@@ -77,6 +121,7 @@ namespace REngine {
     void Application::OnEvent(Event& event) {
         EventDispatcher e(event);
         e.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+        e.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::OnKeyPressed));
         
         camera->OnEvent(event);
     }
@@ -94,6 +139,9 @@ namespace REngine {
     }
 
     bool Application::OnKeyPressed(KeyPressedEvent& e) {
+        if (e.GetKeyCode() == GLFW_KEY_ESCAPE) {
+            isRunning = false;
+        }
         return true;
     }
 

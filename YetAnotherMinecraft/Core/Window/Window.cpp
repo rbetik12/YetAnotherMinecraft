@@ -123,4 +123,12 @@ namespace REngine {
     GLFWwindow* Window::GetWindow() {
         return window;
     }
+
+    uint32_t Window::GetWidth() {
+        return width;
+    }
+
+    uint32_t Window::GetHeight() {
+        return height;
+    }
 }
