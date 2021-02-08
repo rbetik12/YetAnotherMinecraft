@@ -18,6 +18,6 @@ namespace REngine {
 
         virtual void OnUpdate() override;
     private:
-        uint32_t textureIds[12] = { 1,0, 1,0, 1,0 ,1,0, 1,0, 1,0 };
+        uint32_t textureIds[12] = { 0,1, 0,1, 0,1 ,0,1, 0,1, 0,1 };
     };
 }

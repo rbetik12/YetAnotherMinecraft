@@ -11,6 +11,8 @@ namespace REngine {
             R_CORE_ERROR("Can't initialize GLFW!");
 
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        glfwWindowHint(GLFW_SAMPLES, 4);
+
         window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 
         if (!window) {

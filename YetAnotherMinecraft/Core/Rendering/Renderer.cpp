@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 namespace REngine {
     void Renderer::Clear() {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.1, 0.1, 0.1, 1);
     }
 
@@ -14,5 +14,9 @@ namespace REngine {
         glDrawElements(GL_TRIANGLES, ebo.GetCount(), GL_UNSIGNED_INT, nullptr);
     }
 
-    void Renderer::Init() {}
+    void Renderer::Init() {
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_MULTISAMPLE);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
 }

@@ -46,7 +46,7 @@ namespace REngine {
                 layout.reset(new VertexBufferLayout());
                 vao.reset(new VertexArray());
 
-                layout->Push<float>(3);
+                layout->Push<float>(4);
                 layout->Push<float>(3);
                 layout->Push<float>(2);
                 vao->AddBuffer(*vbo.get(), *layout.get());

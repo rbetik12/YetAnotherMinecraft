@@ -12,6 +12,7 @@
 #include <glm/gtx/transform.hpp>
 #include <imgui.h>
 #include "Game/Block/StoneBlock.h"
+#include "Rendering/Texture.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -31,6 +32,7 @@ namespace REngine {
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
         Block::Init();
+        Renderer::Init();
 
         camera.reset(new FPSCamera(glm::vec3(1.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
@@ -41,6 +43,7 @@ namespace REngine {
         gui.reset(ImGuiUi::Create());
 
         Shader basicShader("resources/shaders/block.vert", "resources/shaders/block.frag");
+        Texture blockAtlas("resources/textures/block-atlas.png");
 
         StoneBlock stoneBlock(glm::vec3(0));
 
@@ -53,9 +56,15 @@ namespace REngine {
             glm::mat4 view = camera->GetViewMatrix();
 
             basicShader.Bind();
+            blockAtlas.Bind();
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniformMat4f("model", stoneBlock.GetModel());
+            basicShader.SetUniform1i("blockTexture", 0);
+
+            for (int i = 0; i < 12; i++) {
+                basicShader.SetUniform1ui("textureIds[" + std::to_string(i) + "]", stoneBlock.GetTextureIds()[i]);
+            }
             stoneBlock.Bind();
             Renderer::Draw(Block::GetVAO(), Block::GetVBO(), basicShader);
 
