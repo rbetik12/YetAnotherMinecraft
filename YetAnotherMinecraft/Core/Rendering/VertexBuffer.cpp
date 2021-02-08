@@ -11,6 +11,8 @@ namespace REngine {
         R_CORE_TRACE("Created vertex buffer with id {0}", id);
     }
 
+    VertexBuffer::VertexBuffer() {}
+
     VertexBuffer::~VertexBuffer() {
     }
 

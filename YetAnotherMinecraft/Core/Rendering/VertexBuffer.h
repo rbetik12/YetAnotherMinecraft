@@ -8,6 +8,7 @@ namespace REngine {
         uint32_t size;
     public:
         VertexBuffer(const void* data, uint32_t size);
+        VertexBuffer();
         ~VertexBuffer();
 
         void Bind() const;
