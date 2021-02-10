@@ -13,6 +13,7 @@
 #include <imgui.h>
 #include "Game/Block/StoneBlock.h"
 #include "Rendering/Texture.h"
+#include "Game/Chunk/Chunk.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -47,6 +48,8 @@ namespace REngine {
 
         StoneBlock stoneBlock(glm::vec3(0));
 
+        Chunk chunk;
+
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
@@ -67,8 +70,9 @@ namespace REngine {
             for (int i = 0; i < 6; i++) {
                 basicShader.SetUniform2f("blockAtlasCoords[" + std::to_string(i) + "]", stoneBlock.GetFaceTextureCoords(i));
             }
-            stoneBlock.Bind();
-            Renderer::Draw(Block::GetVAO(), Block::GetVBO(), basicShader);
+            /*stoneBlock.Bind();
+            Renderer::Draw(Block::GetVAO(), Block::GetVBO(), basicShader);*/
+            chunk.Draw(basicShader);
 
             gui->Begin();
             {
