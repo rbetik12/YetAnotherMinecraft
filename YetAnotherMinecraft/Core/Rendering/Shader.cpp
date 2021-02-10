@@ -36,6 +36,14 @@ namespace REngine {
         glUniform1f(GetUniformLocation(name), value);
     }
 
+    void Shader::SetUniform2f(const std::string& name, float v0, float v1) {
+        glUniform2f(GetUniformLocation(name), v0, v1);
+    }
+
+    void Shader::SetUniform2f(const std::string& name, const glm::vec2& vec2) {
+        glUniform2f(GetUniformLocation(name), vec2.x, vec2.y);
+    }
+
     void Shader::SetUniform3f(const std::string& name, float v0, float v1, float v2) {
         glUniform3f(GetUniformLocation(name), v0, v1, v2);
     }

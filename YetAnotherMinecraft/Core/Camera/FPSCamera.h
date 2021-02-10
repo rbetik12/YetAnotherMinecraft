@@ -26,7 +26,7 @@ namespace REngine {
 
         float yaw;
         float pitch;
-        float movementSpeed = 1.0f;
+        float movementSpeed = 5.0f;
         float sensitivity = 0.25f;
         float actualSpeed = 1.0f;
         float prevXMousePos = -1;

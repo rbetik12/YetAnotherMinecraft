@@ -1,6 +1,7 @@
 #pragma once
 #include "Block.h"
 #include <glm/gtx/transform.hpp>
+#include "BlockIds.h"
 
 namespace REngine {
     class StoneBlock : public Block {
@@ -17,7 +18,9 @@ namespace REngine {
         virtual void OnEvent(Event& e) override;
 
         virtual void OnUpdate() override;
+
+        virtual glm::vec2 GetFaceTextureCoords(uint32_t face) override;
     private:
-        uint32_t textureIds[12] = { 0,1, 0,1, 0,1 ,0,1, 0,1, 0,1 };
+        uint32_t textureIds[BLOCK_FACES_ARRAY_SIZE] = { BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE };
     };
 }

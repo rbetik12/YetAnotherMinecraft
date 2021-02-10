@@ -8,15 +8,16 @@
 namespace REngine {
     class Block {
     public:
-        inline glm::mat4& GetModel() {
-            return model;
-        }
-
-        Block();
-
         virtual void OnEvent(Event& e) = 0;
         virtual void OnUpdate() = 0;
         virtual uint32_t* GetTextureIds() = 0;
+        virtual glm::vec2 GetFaceTextureCoords(uint32_t face) = 0;
+
+        Block();
+
+        inline glm::mat4& GetModel() {
+            return model;
+        }
 
         static VertexBuffer& GetVBO() {
             return *vbo.get();
@@ -49,6 +50,7 @@ namespace REngine {
                 layout->Push<float>(4);
                 layout->Push<float>(3);
                 layout->Push<float>(2);
+                layout->Push<float>(3);
                 vao->AddBuffer(*vbo.get(), *layout.get());
                 isInitialized = true;
             }

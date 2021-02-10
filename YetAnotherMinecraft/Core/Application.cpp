@@ -43,7 +43,7 @@ namespace REngine {
         gui.reset(ImGuiUi::Create());
 
         Shader basicShader("resources/shaders/block.vert", "resources/shaders/block.frag");
-        Texture blockAtlas("resources/textures/block-atlas.png");
+        Texture blockAtlas("resources/textures/block-atlas.jpg");
 
         StoneBlock stoneBlock(glm::vec3(0));
 
@@ -55,6 +55,7 @@ namespace REngine {
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 100.0f);
             glm::mat4 view = camera->GetViewMatrix();
 
+            stoneBlock.OnUpdate();
             basicShader.Bind();
             blockAtlas.Bind();
             basicShader.SetUniformMat4f("projection", projection);
@@ -62,8 +63,9 @@ namespace REngine {
             basicShader.SetUniformMat4f("model", stoneBlock.GetModel());
             basicShader.SetUniform1i("blockTexture", 0);
 
-            for (int i = 0; i < 12; i++) {
-                basicShader.SetUniform1ui("textureIds[" + std::to_string(i) + "]", stoneBlock.GetTextureIds()[i]);
+            uint32_t textureCoordsCounter = 0;
+            for (int i = 0; i < 6; i++) {
+                basicShader.SetUniform2f("blockAtlasCoords[" + std::to_string(i) + "]", stoneBlock.GetFaceTextureCoords(i));
             }
             stoneBlock.Bind();
             Renderer::Draw(Block::GetVAO(), Block::GetVBO(), basicShader);
