@@ -35,7 +35,7 @@ namespace REngine {
         Block::Init();
         Renderer::Init();
 
-        camera.reset(new FPSCamera(glm::vec3(1.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        camera.reset(new FPSCamera(glm::vec3(1.0f, 33.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         isRunning = true;
     }
@@ -43,10 +43,8 @@ namespace REngine {
     void Application::Run() {
         gui.reset(ImGuiUi::Create());
 
-        Shader basicShader("resources/shaders/block.vert", "resources/shaders/block.frag");
+        Shader basicShader("resources/shaders/chunk.vert", "resources/shaders/chunk.frag");
         Texture blockAtlas("resources/textures/block-atlas.jpg");
-
-        StoneBlock stoneBlock(glm::vec3(0));
 
         Chunk chunk;
 
@@ -58,20 +56,13 @@ namespace REngine {
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 100.0f);
             glm::mat4 view = camera->GetViewMatrix();
 
-            stoneBlock.OnUpdate();
             basicShader.Bind();
             blockAtlas.Bind();
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
-            basicShader.SetUniformMat4f("model", stoneBlock.GetModel());
+            basicShader.SetUniformMat4f("model", chunk.GetModelMatrix());
             basicShader.SetUniform1i("blockTexture", 0);
 
-            uint32_t textureCoordsCounter = 0;
-            for (int i = 0; i < 6; i++) {
-                basicShader.SetUniform2f("blockAtlasCoords[" + std::to_string(i) + "]", stoneBlock.GetFaceTextureCoords(i));
-            }
-            /*stoneBlock.Bind();
-            Renderer::Draw(Block::GetVAO(), Block::GetVBO(), basicShader);*/
             chunk.Draw(basicShader);
 
             gui->Begin();

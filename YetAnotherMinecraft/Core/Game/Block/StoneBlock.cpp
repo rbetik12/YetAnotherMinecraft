@@ -13,7 +13,7 @@ namespace REngine {
 
     glm::vec2 StoneBlock::GetFaceTextureCoords(uint32_t face) {
         glm::vec2 vec = glm::vec2(textureIds[face * 2], textureIds[face * 2 + 1]);
-        R_CORE_INFO("{0}", glm::to_string(vec));
+        //R_CORE_INFO("{0}", glm::to_string(vec));
         return vec;
     }
 }

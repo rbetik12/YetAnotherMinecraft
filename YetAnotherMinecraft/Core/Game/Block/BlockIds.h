@@ -12,6 +12,19 @@
 //Mustn't be ever changed!!!
 #define BLOCK_FACES_ARRAY_SIZE 12
 
-#define BLOCK_GRAVEL 0, 0
-#define BLOCK_STONE 1, 0
-#define BLOCK_COBBLESTONE 0, 1
+//For a chunk system atlas coordinates must be defined separately
+#define BLOCK_STONE_X 1
+#define BLOCK_STONE_Y 0
+
+#define BLOCK_GRAVEL_X 0
+#define BLOCK_GRAVEL_Y 0
+
+#define BLOCK_COBBLESTONE_X 0
+#define BLOCK_COBBLESTONE_Y 1
+
+#define BLOCK_IRON_ORE_X 1
+#define BLOCK_IRON_ORE_Y 2
+
+#define BLOCK_GRAVEL BLOCK_GRAVEL_X, BLOCK_GRAVEL_Y
+#define BLOCK_STONE BLOCK_STONE_X, BLOCK_STONE_Y
+#define BLOCK_COBBLESTONE BLOCK_COBBLESTONE_X, BLOCK_COBBLESTONE_Y

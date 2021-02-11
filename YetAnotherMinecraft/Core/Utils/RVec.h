@@ -16,4 +16,4 @@ struct RVec3 {
 struct RVec2 {
     float x;
     float y;
-}
+};

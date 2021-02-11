@@ -10,8 +10,10 @@ namespace REngine {
         Chunk();
 
         void Draw(const Shader& shader);
+        glm::mat4& GetModelMatrix();
     private:
         std::unique_ptr<VertexArray> vao;
         std::unique_ptr<VertexBuffer> vbo;
+        glm::mat4 model;
     };
 }
