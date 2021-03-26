@@ -5,6 +5,13 @@
 #include "../../Log.h"
 #include <glm/gtx/string_cast.hpp>
 
+#define BACK_FACE_INDEX 0
+#define FRONT_FACE_INDEX 1
+#define LEFT_FACE_INDEX 2
+#define RIGHT_FACE_INDEX 3
+#define BOTTOM_FACE_INDEX 4
+#define TOP_FACE_INDEX 5
+
 namespace REngine {
     class Block {
     public:

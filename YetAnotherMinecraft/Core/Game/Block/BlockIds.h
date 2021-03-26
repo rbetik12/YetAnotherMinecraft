@@ -28,3 +28,10 @@
 #define BLOCK_GRAVEL BLOCK_GRAVEL_X, BLOCK_GRAVEL_Y
 #define BLOCK_STONE BLOCK_STONE_X, BLOCK_STONE_Y
 #define BLOCK_COBBLESTONE BLOCK_COBBLESTONE_X, BLOCK_COBBLESTONE_Y
+
+enum BlockType {
+    Empty,
+    Gravel,
+    Stone,
+    IronOre
+};

@@ -32,7 +32,7 @@ namespace REngine {
         R_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
         R_CORE_INFO("OpenGL version: {0}", glGetString(GL_VERSION));
 
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
 
         R_CORE_INFO("Created new window!");
 
