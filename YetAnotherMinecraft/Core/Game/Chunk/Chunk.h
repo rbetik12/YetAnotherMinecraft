@@ -4,6 +4,7 @@
 #include "../../Rendering/VertexArray.h"
 #include "../../Rendering/Shader.h"
 #include "../../Utils/RVec.h"
+#include "../Block/BlockIds.h"
 
 namespace REngine {
     struct CubeFaceVertex {
@@ -34,6 +35,6 @@ namespace REngine {
         glm::mat4 model;
 
         bool WithinChunk(uint32_t x, uint32_t y, uint32_t z);
-        void FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, uint32_t x, uint32_t y, uint32_t z);
+        void FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type);
     };
 }
