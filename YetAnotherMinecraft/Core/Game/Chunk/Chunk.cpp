@@ -13,11 +13,10 @@
 namespace REngine {
     Chunk::Chunk(): model(1.0f) {
         std::vector<CubeFace> cubeFaces;
-        BlockType chunkBlocks[CHUNK_SIZE] = {
-            IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre, IronOre,
-        };
+        BlockType chunkBlocks[CHUNK_SIZE] = {Gravel};
         uint32_t cubeID;
         RVec3 blockPos;
+        BlockType blockType = Cobblestone;
 
         for (uint32_t y = 0; y < CHUNK_SIZE_Y; y++) {
             for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
@@ -26,24 +25,27 @@ namespace REngine {
                     blockPos.x = x;
                     blockPos.y = y;
                     blockPos.z = z;
-
+                    if (y >= CHUNK_SIZE_Y - 2) {
+                        blockType = Dirt;
+                    }
+        
                     if (!WithinChunk(x, y, z - 1)) {
-                        FillFace(cubeFaces, BACK_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, BACK_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y, z + 1)) {
-                        FillFace(cubeFaces, FRONT_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, FRONT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x - 1, y, z)) {
-                        FillFace(cubeFaces, LEFT_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, LEFT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x + 1, y, z)) {
-                        FillFace(cubeFaces, RIGHT_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, RIGHT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y - 1, z)) {
-                        FillFace(cubeFaces, BOTTOM_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, BOTTOM_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y + 1, z)) {
-                        FillFace(cubeFaces, TOP_FACE_INDEX, blockPos, chunkBlocks[cubeID]);
+                        FillFace(cubeFaces, TOP_FACE_INDEX, blockPos, blockType);
                     }
                 }
             }
@@ -94,6 +96,14 @@ namespace REngine {
             case IronOre:
                 atlasCoordX = BLOCK_IRON_ORE_X;
                 atlasCoordY = BLOCK_IRON_ORE_Y;
+                break;
+            case Dirt:
+                atlasCoordX = BLOCK_DIRT_X;
+                atlasCoordY = BLOCK_DIRT_Y;
+                break;
+            case Cobblestone:
+                atlasCoordX = BLOCK_COBBLESTONE_X;
+                atlasCoordY = BLOCK_COBBLESTONE_Y;
                 break;
             default:
                 break;
