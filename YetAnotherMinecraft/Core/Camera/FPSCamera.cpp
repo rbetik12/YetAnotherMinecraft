@@ -5,7 +5,7 @@
 #include "glm/gtx/string_cast.hpp"
 
 namespace REngine {
-    FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 worldUp): position(position), worldUp(worldUp), yaw(-90.0f), pitch(0.0f) {
+    FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 worldUp): position(position), worldUp(worldUp), rotation(0.0f) {
         UpdateVectors();
     }
 
@@ -19,7 +19,7 @@ namespace REngine {
         return glm::lookAt(position, position + front, up);
     }
 
-    glm::vec3 FPSCamera::GetPosition() {
+    glm::vec3& FPSCamera::GetPosition() {
         return position;
     }
 
@@ -27,7 +27,25 @@ namespace REngine {
         return front;
     }
 
+    float& FPSCamera::GetCameraMovementSpeed() {
+        return movementSpeed;
+    }
+
+    glm::vec3& FPSCamera::GetRotation() {
+        return rotation;
+    }
+
+    void FPSCamera::ToggleMouseCapture() {
+        captureMouse = !captureMouse;
+    }
+
+    bool FPSCamera::IsMouseCaptured() {
+        return captureMouse;
+    }
+
     void FPSCamera::UpdateVectors() {
+        float yaw = rotation[0];
+        float pitch = rotation[1];
         glm::vec3 rotatedFront;
         rotatedFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
         rotatedFront.y = sin(glm::radians(pitch));
@@ -63,6 +81,10 @@ namespace REngine {
         return true;
     }
     bool FPSCamera::OnMouseMove(MouseMovedEvent& e) {
+        if (!captureMouse) {
+            UpdateVectors();
+            return true;
+        }
         if (prevXMousePos == -1) {
             prevXMousePos = e.GetX();
             prevYMousePos = e.GetY();
@@ -72,14 +94,14 @@ namespace REngine {
         xOffset *= sensitivity;
         yOffset *= sensitivity;
 
-        yaw += xOffset;
-        pitch += yOffset;
+        rotation[0] += xOffset;
+        rotation[1] += yOffset;
 
 
-        if (pitch > 89.0f)
-            pitch = 89.0f;
-        if (pitch < -89.0f)
-            pitch = -89.0f;
+        if (rotation[1] > 89.0f)
+            rotation[1] = 89.0f;
+        if (rotation[1] < -89.0f)
+            rotation[1] = -89.0f;
         UpdateVectors();
         prevXMousePos = e.GetX();
         prevYMousePos = e.GetY();

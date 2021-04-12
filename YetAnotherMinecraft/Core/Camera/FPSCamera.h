@@ -15,22 +15,27 @@ namespace REngine {
         void OnEvent(Event& e);
         glm::mat4 GetViewMatrix();
 
-        glm::vec3 GetPosition();
+        glm::vec3& GetPosition();
+        glm::vec3& GetRotation();
         glm::vec3 GetFront();
+        float& GetCameraMovementSpeed();
+        void ToggleMouseCapture();
+        bool IsMouseCaptured();
     private:
         glm::vec3 position;
         glm::vec3 up;
         glm::vec3 front;
         glm::vec3 right;
         glm::vec3 worldUp;
-
-        float yaw;
-        float pitch;
-        float movementSpeed = 5.0f;
+        glm::vec3 rotation;
+        
+        float movementSpeed = 50.0f;
         float sensitivity = 0.25f;
         float actualSpeed = 1.0f;
         float prevXMousePos = -1;
         float prevYMousePos = -1;
+
+        bool captureMouse = true;
 
         void UpdateVectors();
         bool OnKeyPressed(KeyPressedEvent& e);

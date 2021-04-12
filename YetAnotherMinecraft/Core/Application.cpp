@@ -14,6 +14,7 @@
 #include "Game/Block/StoneBlock.h"
 #include "Rendering/Texture.h"
 #include "Game/Chunk/Chunk.h"
+#include "Utils/RFloat.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -67,9 +68,24 @@ namespace REngine {
 
             gui->Begin();
             {
+                glm::vec3 prevRotation(0.0f);
+                prevRotation[0] = camera->GetRotation()[0];
+                prevRotation[1] = camera->GetRotation()[1];
+
                 ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
                 ImGui::Begin("Debug");
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                ImGui::InputFloat3("Camera position", &camera->GetPosition()[0]);
+                ImGui::InputFloat3("Camera rotation", &camera->GetRotation()[0]);
+                ImGui::SliderFloat("Movement speed", &camera->GetCameraMovementSpeed(), 50.0f, 100.0f);
+                if (!camera->IsMouseCaptured()) {
+                    ImGui::Text("Toggled UI mode");
+                    if (!FLOAT_EQ(prevRotation[0], camera->GetRotation()[0]) || !FLOAT_EQ(prevRotation[1], camera->GetRotation()[1])) {
+                        // We trigger this event here, because we need to trigger recalculating of camera vectors.
+                        MouseMovedEvent e(0.0f, 0.0f);
+                        camera->OnEvent(e);
+                    }
+                }
                 ImGui::End();
             }
             gui->End();
@@ -103,6 +119,9 @@ namespace REngine {
     bool Application::OnKeyPressed(KeyPressedEvent& e) {
         if (e.GetKeyCode() == GLFW_KEY_ESCAPE) {
             isRunning = false;
+        }
+        else if (e.GetKeyCode() == GLFW_KEY_M) {
+            camera->ToggleMouseCapture();
         }
         return true;
     }
