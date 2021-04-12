@@ -4,47 +4,69 @@
 #include "../Block/BlockIds.h"
 #include "../../Rendering/Renderer.h"
 #include "../../Utils/RVec.h"
+#include <PerlinNoise.hpp>
 
-#define CHUNK_SIZE_X 16
-#define CHUNK_SIZE_Y 16
-#define CHUNK_SIZE_Z 16
+#define CHUNK_SIZE_X 32
+#define CHUNK_SIZE_Y 32
+#define CHUNK_SIZE_Z 32
 #define CHUNK_SIZE CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z
 
 namespace REngine {
-    Chunk::Chunk(): model(1.0f) {
+    Chunk::Chunk() : model(1.0f) {
         std::vector<CubeFace> cubeFaces;
-        BlockType chunkBlocks[CHUNK_SIZE] = {Gravel};
+        BlockType* chunkBlocks = new BlockType[CHUNK_SIZE];
         uint32_t cubeID;
         RVec3 blockPos;
         BlockType blockType = Cobblestone;
+        const siv::PerlinNoise perlin(2);
+        uint32_t height;
 
-        for (uint32_t y = 0; y < CHUNK_SIZE_Y; y++) {
-            for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
-                for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
+        for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
+            for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
+                height = perlin.accumulatedOctaveNoise2D_0_1((float)x / CHUNK_SIZE_X, (float)z / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
+                for (uint32_t y = 0; y < height; y++) {
                     cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+                    if (y >= CHUNK_SIZE_Y - CHUNK_SIZE_Y / 2 || y == height - 1) {
+                        blockType = Dirt;
+                    }
+                    else {
+                        blockType = Cobblestone;
+                    }
+                    chunkBlocks[cubeID] = blockType;
+                }
+                for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
+                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+                    chunkBlocks[cubeID] = Empty;
+                }
+            }
+        }
+
+        for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
+            for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
+                for (uint32_t y = 0; y < CHUNK_SIZE_Y; y++) {
+                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+                    if (chunkBlocks[cubeID] == Empty) continue;
+
                     blockPos.x = x;
                     blockPos.y = y;
                     blockPos.z = z;
-                    if (y >= CHUNK_SIZE_Y - 2) {
-                        blockType = Dirt;
-                    }
-        
-                    if (!WithinChunk(x, y, z - 1)) {
+                    blockType = chunkBlocks[cubeID];
+                    if (!WithinChunk(x, y, z - 1) || IsEmptyBlock(x, y, z - 1, chunkBlocks)) {
                         FillFace(cubeFaces, BACK_FACE_INDEX, blockPos, blockType);
                     }
-                    if (!WithinChunk(x, y, z + 1)) {
+                    if (!WithinChunk(x, y, z + 1) || IsEmptyBlock(x, y, z + 1, chunkBlocks)) {
                         FillFace(cubeFaces, FRONT_FACE_INDEX, blockPos, blockType);
                     }
-                    if (!WithinChunk(x - 1, y, z)) {
+                    if (!WithinChunk(x - 1, y, z) || IsEmptyBlock(x - 1, y, z, chunkBlocks)) {
                         FillFace(cubeFaces, LEFT_FACE_INDEX, blockPos, blockType);
                     }
-                    if (!WithinChunk(x + 1, y, z)) {
+                    if (!WithinChunk(x + 1, y, z) || IsEmptyBlock(x + 1, y, z, chunkBlocks)) {
                         FillFace(cubeFaces, RIGHT_FACE_INDEX, blockPos, blockType);
                     }
-                    if (!WithinChunk(x, y - 1, z)) {
+                    if (!WithinChunk(x, y - 1, z) || IsEmptyBlock(x, y - 1, z, chunkBlocks)) {
                         FillFace(cubeFaces, BOTTOM_FACE_INDEX, blockPos, blockType);
                     }
-                    if (!WithinChunk(x, y + 1, z)) {
+                    if (!WithinChunk(x, y + 1, z) || IsEmptyBlock(x, y + 1, z, chunkBlocks)) {
                         FillFace(cubeFaces, TOP_FACE_INDEX, blockPos, blockType);
                     }
                 }
@@ -63,6 +85,8 @@ namespace REngine {
 
         model = glm::translate(model, glm::vec3(0.0f));
         model = glm::scale(model, glm::vec3(1.0f));
+
+        delete[] chunkBlocks;
     }
 
     void Chunk::Draw(const Shader& shader) {
@@ -76,7 +100,13 @@ namespace REngine {
     }
 
     bool Chunk::WithinChunk(uint32_t x, uint32_t y, uint32_t z) {
-        return x >= 0 && x < CHUNK_SIZE_X && y >= 0 && y < CHUNK_SIZE_Y && z >= 0 && z < CHUNK_SIZE_Z;
+        return x >= 0 && x < CHUNK_SIZE_X&& y >= 0 && y < CHUNK_SIZE_Y&& z >= 0 && z < CHUNK_SIZE_Z;
+    }
+
+    bool Chunk::IsEmptyBlock(uint32_t x, uint32_t y, uint32_t z, BlockType* chunkMap) {
+        uint32_t cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+        if (chunkMap[cubeID] == Empty) return true;
+        return false;
     }
 
     void Chunk::FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type) {

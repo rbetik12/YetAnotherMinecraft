@@ -7,3 +7,6 @@
 [submodule "lib/imgui"]
 	path = lib/imgui
 	url = https://github.com/rbetik12/imgui.git
+[submodule "lib/PerlinNoise"]
+	path = lib/PerlinNoise
+	url = https://github.com/rbetik12/PerlinNoise.git

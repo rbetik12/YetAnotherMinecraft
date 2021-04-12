@@ -35,6 +35,7 @@ namespace REngine {
         glm::mat4 model;
 
         bool WithinChunk(uint32_t x, uint32_t y, uint32_t z);
+        bool IsEmptyBlock(uint32_t x, uint32_t y, uint32_t z, BlockType* chunkMap);
         void FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type);
     };
 }
