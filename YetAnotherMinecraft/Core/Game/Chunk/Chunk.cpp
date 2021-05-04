@@ -12,7 +12,7 @@
 #define CHUNK_SIZE CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z
 
 namespace REngine {
-    Chunk::Chunk() : model(1.0f) {
+    Chunk::Chunk() {
         std::vector<CubeFace> cubeFaces;
         BlockType* chunkBlocks = new BlockType[CHUNK_SIZE];
         uint32_t cubeID;
@@ -146,5 +146,15 @@ namespace REngine {
             vertexPos.z += pos.z * 2;
         }
         cubeFaces.push_back(face);
+    }
+
+    void Chunk::Move(glm::vec3 newCoords) {
+        position = newCoords;
+        UpdateModelMatrix();
+    }
+
+    void Chunk::Scale(glm::vec3 scaleVec) {
+        scale = scaleVec;
+        UpdateModelMatrix();
     }
 }

@@ -54,7 +54,7 @@ namespace REngine {
             camera->OnUpdate();
             Renderer::Clear();
 
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 100.0f);
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 300.0f);
             glm::mat4 view = camera->GetViewMatrix();
 
             basicShader.Bind();

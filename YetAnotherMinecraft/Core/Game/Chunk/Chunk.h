@@ -5,6 +5,7 @@
 #include "../../Rendering/Shader.h"
 #include "../../Utils/RVec.h"
 #include "../Block/BlockIds.h"
+#include "../GameObject/GameObject.h"
 
 namespace REngine {
     struct CubeFaceVertex {
@@ -23,16 +24,17 @@ namespace REngine {
         CubeFace cubeFaces[6];
     };
 
-    class Chunk {
+    class Chunk: public IGameObject {
     public:
         Chunk();
 
         void Draw(const Shader& shader);
         glm::mat4& GetModelMatrix();
+        virtual void Move(glm::vec3 newCoords) override;
+        virtual void Scale(glm::vec3 scaleVec) override;
     private:
         std::unique_ptr<VertexArray> vao;
         std::unique_ptr<VertexBuffer> vbo;
-        glm::mat4 model;
 
         bool WithinChunk(uint32_t x, uint32_t y, uint32_t z);
         bool IsEmptyBlock(uint32_t x, uint32_t y, uint32_t z, BlockType* chunkMap);
