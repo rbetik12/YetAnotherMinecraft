@@ -12,34 +12,13 @@
 #define CHUNK_SIZE CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z
 
 namespace REngine {
-    Chunk::Chunk() {
+    Chunk::Chunk(glm::vec3 position) {
+        this->position = position;
         std::vector<CubeFace> cubeFaces;
-        BlockType* chunkBlocks = new BlockType[CHUNK_SIZE];
+        chunkBlocks = GenerateChunkBlocks();
+        BlockType blockType = Cobblestone;
         uint32_t cubeID;
         RVec3 blockPos;
-        BlockType blockType = Cobblestone;
-        const siv::PerlinNoise perlin(2);
-        uint32_t height;
-
-        for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
-            for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
-                height = perlin.accumulatedOctaveNoise2D_0_1((float)x / CHUNK_SIZE_X, (float)z / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
-                for (uint32_t y = 0; y < height; y++) {
-                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
-                    if (y >= CHUNK_SIZE_Y - CHUNK_SIZE_Y / 2 || y == height - 1) {
-                        blockType = Dirt;
-                    }
-                    else {
-                        blockType = Cobblestone;
-                    }
-                    chunkBlocks[cubeID] = blockType;
-                }
-                for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
-                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
-                    chunkBlocks[cubeID] = Empty;
-                }
-            }
-        }
 
         for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
             for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
@@ -83,9 +62,10 @@ namespace REngine {
         vao.reset(new VertexArray());
         vao->AddBuffer(*vbo.get(), layout);
 
-        model = glm::translate(model, glm::vec3(0.0f));
-        model = glm::scale(model, glm::vec3(1.0f));
+        UpdateModelMatrix();
+    }
 
+    Chunk::~Chunk() {
         delete[] chunkBlocks;
     }
 
@@ -146,6 +126,36 @@ namespace REngine {
             vertexPos.z += pos.z * 2;
         }
         cubeFaces.push_back(face);
+    }
+
+    BlockType* Chunk::GenerateChunkBlocks() {
+        const siv::PerlinNoise perlin(2);
+        BlockType blockType = Cobblestone;
+        uint32_t height;
+        uint32_t cubeID;
+        BlockType* _chunkBlocks = new BlockType[CHUNK_SIZE];
+
+        for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
+            for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
+                height = perlin.accumulatedOctaveNoise2D_0_1((float)(x + ((int)position.x % CHUNK_SIZE_X * 2)) / CHUNK_SIZE_X, (float)(z + ((int)position.z % CHUNK_SIZE_Z * 2)) / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
+                for (uint32_t y = 0; y < height; y++) {
+                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+                    if (y >= CHUNK_SIZE_Y - CHUNK_SIZE_Y / 2 || y == height - 1) {
+                        blockType = Dirt;
+                    }
+                    else {
+                        blockType = Cobblestone;
+                    }
+                    _chunkBlocks[cubeID] = blockType;
+                }
+                for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
+                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+                    _chunkBlocks[cubeID] = Empty;
+                }
+            }
+        }
+
+        return _chunkBlocks;
     }
 
     void Chunk::Move(glm::vec3 newCoords) {

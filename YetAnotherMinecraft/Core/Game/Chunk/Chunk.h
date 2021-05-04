@@ -26,18 +26,23 @@ namespace REngine {
 
     class Chunk: public IGameObject {
     public:
-        Chunk();
+        Chunk(glm::vec3 position);
+        ~Chunk();
 
         void Draw(const Shader& shader);
         glm::mat4& GetModelMatrix();
         virtual void Move(glm::vec3 newCoords) override;
         virtual void Scale(glm::vec3 scaleVec) override;
+
     private:
         std::unique_ptr<VertexArray> vao;
         std::unique_ptr<VertexBuffer> vbo;
+        BlockType* chunkBlocks;
 
+    private:
         bool WithinChunk(uint32_t x, uint32_t y, uint32_t z);
         bool IsEmptyBlock(uint32_t x, uint32_t y, uint32_t z, BlockType* chunkMap);
         void FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type);
+        BlockType* GenerateChunkBlocks();
     };
 }

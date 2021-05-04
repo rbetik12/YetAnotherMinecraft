@@ -47,7 +47,9 @@ namespace REngine {
         Shader basicShader("resources/shaders/chunk.vert", "resources/shaders/chunk.frag");
         Texture blockAtlas("resources/textures/block-atlas.jpg");
 
-        Chunk chunk;
+        Chunk chunk(glm::vec3(0, 0, 0));
+        Chunk chunk1(glm::vec3(64, 0, 0));
+        Chunk chunk2(glm::vec3(0, 0, 64));
 
         while (isRunning) {
             Time::OnUpdate();
@@ -61,10 +63,18 @@ namespace REngine {
             blockAtlas.Bind();
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
-            basicShader.SetUniformMat4f("model", chunk.GetModelMatrix());
             basicShader.SetUniform1i("blockTexture", 0);
+            basicShader.SetUniformMat4f("model", chunk.GetModelMatrix());
 
             chunk.Draw(basicShader);
+
+            basicShader.SetUniformMat4f("model", chunk1.GetModelMatrix());
+
+            chunk1.Draw(basicShader);
+
+            basicShader.SetUniformMat4f("model", chunk2.GetModelMatrix());
+
+            chunk2.Draw(basicShader);
 
             gui->Begin();
             {
