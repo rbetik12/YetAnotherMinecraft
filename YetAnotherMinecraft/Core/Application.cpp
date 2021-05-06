@@ -50,6 +50,7 @@ namespace REngine {
         Chunk chunk(glm::vec3(0, 0, 0));
         Chunk chunk1(glm::vec3(64, 0, 0));
         Chunk chunk2(glm::vec3(0, 0, 64));
+        Chunk chunk3(glm::vec3(64, 0, 64));
 
         while (isRunning) {
             Time::OnUpdate();
@@ -75,6 +76,10 @@ namespace REngine {
             basicShader.SetUniformMat4f("model", chunk2.GetModelMatrix());
 
             chunk2.Draw(basicShader);
+
+            basicShader.SetUniformMat4f("model", chunk3.GetModelMatrix());
+
+            chunk3.Draw(basicShader);
 
             gui->Begin();
             {
