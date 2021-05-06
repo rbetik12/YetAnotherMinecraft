@@ -28,9 +28,13 @@
 #define BLOCK_DIRT_X 2
 #define BLOCK_DIRT_Y 0
 
+#define BLOCK_TREE_SIDE_X 4
+#define BLOCK_TREE_SIDE_Y 1
+
 #define BLOCK_GRAVEL BLOCK_GRAVEL_X, BLOCK_GRAVEL_Y
 #define BLOCK_STONE BLOCK_STONE_X, BLOCK_STONE_Y
 #define BLOCK_COBBLESTONE BLOCK_COBBLESTONE_X, BLOCK_COBBLESTONE_Y
+#define BLOCK_TREE_SIDE BLOCK_TREE_SIZE_X, BLOCK_TREE_SIZE_Y 
 
 enum BlockType {
     Empty,
@@ -38,5 +42,6 @@ enum BlockType {
     Stone,
     IronOre,
     Dirt,
-    Cobblestone
+    Cobblestone,
+    TreeSide
 };

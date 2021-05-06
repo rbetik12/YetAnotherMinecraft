@@ -115,6 +115,9 @@ namespace REngine {
                 atlasCoordX = BLOCK_COBBLESTONE_X;
                 atlasCoordY = BLOCK_COBBLESTONE_Y;
                 break;
+            case TreeSide:
+                atlasCoordX = BLOCK_TREE_SIDE_X;
+                atlasCoordY = BLOCK_TREE_SIDE_Y;
             default:
                 break;
             }
@@ -133,11 +136,17 @@ namespace REngine {
         BlockType blockType = Cobblestone;
         uint32_t height;
         uint32_t cubeID;
+        uint32_t treeNoiseOffset = 0xfff0A0A;
+        float generateTreeCoef;
         BlockType* _chunkBlocks = new BlockType[CHUNK_SIZE];
+        bool generateTree = false;
+        uint32_t treeHeight = 0;
 
         for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
             for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
-                height = perlin.accumulatedOctaveNoise2D_0_1((float)(x + ((int)position.x / 2)) / CHUNK_SIZE_X, (float)(z + ((int)position.z / 2)) / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
+                height = perlin.accumulatedOctaveNoise2D_0_1((float)(x + ((int)position.x / 2)) / CHUNK_SIZE_X, 
+                                                             (float)(z + ((int)position.z / 2)) / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
+
                 for (uint32_t y = 0; y < height; y++) {
                     cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
                     if (y >= CHUNK_SIZE_Y - CHUNK_SIZE_Y / 2 || y == height - 1) {
@@ -148,9 +157,24 @@ namespace REngine {
                     }
                     _chunkBlocks[cubeID] = blockType;
                 }
+
+                if ((x + z) % 11 == 0) {
+                    generateTree = true;
+                }
+                else {
+                    generateTree = false;
+                }
+
+                treeHeight = 0;
                 for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
                     cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
-                    _chunkBlocks[cubeID] = Empty;
+                    if (generateTree && treeHeight < 4) {
+                        _chunkBlocks[cubeID] = TreeSide;
+                        treeHeight += 1;
+                    }
+                    else {
+                        _chunkBlocks[cubeID] = Empty;
+                    }
                 }
             }
         }
