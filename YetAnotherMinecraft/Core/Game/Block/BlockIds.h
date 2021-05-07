@@ -31,6 +31,9 @@
 #define BLOCK_TREE_SIDE_X 4
 #define BLOCK_TREE_SIDE_Y 1
 
+#define BLOCK_LEAF_X 5
+#define BLOCK_LEAF_Y 8
+
 #define BLOCK_GRAVEL BLOCK_GRAVEL_X, BLOCK_GRAVEL_Y
 #define BLOCK_STONE BLOCK_STONE_X, BLOCK_STONE_Y
 #define BLOCK_COBBLESTONE BLOCK_COBBLESTONE_X, BLOCK_COBBLESTONE_Y
@@ -43,5 +46,6 @@ enum BlockType {
     IronOre,
     Dirt,
     Cobblestone,
-    TreeSide
+    TreeSide,
+    Leaf
 };

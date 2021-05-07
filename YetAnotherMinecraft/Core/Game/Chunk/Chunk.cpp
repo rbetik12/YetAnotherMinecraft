@@ -118,6 +118,11 @@ namespace REngine {
             case TreeSide:
                 atlasCoordX = BLOCK_TREE_SIDE_X;
                 atlasCoordY = BLOCK_TREE_SIDE_Y;
+                break;
+            case Leaf:
+                atlasCoordX = BLOCK_LEAF_X;
+                atlasCoordY = BLOCK_LEAF_Y;
+                break;
             default:
                 break;
             }
@@ -136,11 +141,9 @@ namespace REngine {
         BlockType blockType = Cobblestone;
         uint32_t height;
         uint32_t cubeID;
-        uint32_t treeNoiseOffset = 0xfff0A0A;
-        float generateTreeCoef;
         BlockType* _chunkBlocks = new BlockType[CHUNK_SIZE];
-        bool generateTree = false;
-        uint32_t treeHeight = 0;
+
+        memset(_chunkBlocks, 0, sizeof(BlockType) * CHUNK_SIZE);
 
         for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
             for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
@@ -158,28 +161,74 @@ namespace REngine {
                     _chunkBlocks[cubeID] = blockType;
                 }
 
-                if ((x + z) % 11 == 0) {
-                    generateTree = true;
-                }
-                else {
-                    generateTree = false;
-                }
-
-                treeHeight = 0;
-                for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
-                    cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
-                    if (generateTree && treeHeight < 4) {
-                        _chunkBlocks[cubeID] = TreeSide;
-                        treeHeight += 1;
-                    }
-                    else {
-                        _chunkBlocks[cubeID] = Empty;
-                    }
-                }
+                GenerateTrees(_chunkBlocks, height, x, z);
             }
         }
 
         return _chunkBlocks;
+    }
+
+    void Chunk::GenerateTrees(BlockType* _chunkBlocks, uint32_t height, uint32_t x, uint32_t z) {
+        bool generateTree = false;
+        uint32_t treeHeight = 0;
+        uint32_t cubeID;
+        uint32_t leafXLeftOffset;
+        uint32_t leafZLeftOffset;
+        uint32_t leafRadius = 2;
+        double prob = (double)rand() / RAND_MAX;
+
+        if (prob < 0.005) {
+            generateTree = true;
+        }
+        else {
+            generateTree = false;
+        }
+
+        treeHeight = 0;
+        for (uint32_t y = height; y < CHUNK_SIZE_Y; y++) {
+            cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (z * CHUNK_SIZE_X) + x;
+            if (generateTree && treeHeight < 4) {
+                _chunkBlocks[cubeID] = TreeSide;
+                treeHeight += 1;
+            }
+            else if (generateTree && treeHeight >= 4 && treeHeight <= 6) {
+                if (x <= leafRadius) {
+                    leafXLeftOffset = 0;
+                }
+                else {
+                    leafXLeftOffset = x - 2;
+                }
+
+                if (z <= leafRadius) {
+                    leafZLeftOffset = 0;
+                }
+                else {
+                    leafZLeftOffset = z - 2;
+                }
+
+                for (uint32_t leafX = leafXLeftOffset; leafX <= x + 2; leafX++) {
+                    for (uint32_t leafZ = leafZLeftOffset; leafZ <= z + 2; leafZ++) {
+                        if (WithinChunk(leafX, y, leafZ)) {
+                            cubeID = (y * CHUNK_SIZE_Z * CHUNK_SIZE_X) + (leafZ * CHUNK_SIZE_X) + leafX;
+                            if (treeHeight >= 5) {
+                                prob = (double)rand() / RAND_MAX;
+                                if (prob > 0.5 && (leafZ == z + 2 || leafX == x + 2 || leafX == x - 2 || leafZ == z - 2)) {
+                                    _chunkBlocks[cubeID] = Empty;
+                                }
+                                else {
+                                    _chunkBlocks[cubeID] = Leaf;
+                                }
+                            }
+                            else {
+                                _chunkBlocks[cubeID] = Leaf;
+                            }
+                        }
+                    }
+                }
+
+                treeHeight += 1;
+            }
+        }
     }
 
     void Chunk::Move(glm::vec3 newCoords) {
