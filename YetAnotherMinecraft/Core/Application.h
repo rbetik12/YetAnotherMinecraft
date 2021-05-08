@@ -15,6 +15,7 @@ namespace REngine {
         void Run();
         void OnEvent(Event &event);
         Window* GetWindow();
+        FPSCamera* GetCamera();
     private:
         Application() {
             Init();

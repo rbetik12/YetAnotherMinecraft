@@ -5,6 +5,7 @@
 #include "../../Rendering/Renderer.h"
 #include "../../Utils/RVec.h"
 #include <PerlinNoise.hpp>
+#include "../../Application.h"
 
 #define CHUNK_SIZE_X 32
 #define CHUNK_SIZE_Y 32
@@ -15,6 +16,7 @@ namespace REngine {
     Chunk::Chunk(glm::vec3 position) {
         this->position = position;
         std::vector<CubeFace> cubeFaces;
+        std::vector<CubeFace> transParentCubeFaces;
         chunkBlocks = GenerateChunkBlocks();
         BlockType blockType = Cobblestone;
         uint32_t cubeID;
@@ -31,28 +33,31 @@ namespace REngine {
                     blockPos.z = z;
                     blockType = chunkBlocks[cubeID];
                     if (!WithinChunk(x, y, z - 1) || IsEmptyBlock(x, y, z - 1, chunkBlocks)) {
-                        FillFace(cubeFaces, BACK_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, BACK_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y, z + 1) || IsEmptyBlock(x, y, z + 1, chunkBlocks)) {
-                        FillFace(cubeFaces, FRONT_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, FRONT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x - 1, y, z) || IsEmptyBlock(x - 1, y, z, chunkBlocks)) {
-                        FillFace(cubeFaces, LEFT_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, LEFT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x + 1, y, z) || IsEmptyBlock(x + 1, y, z, chunkBlocks)) {
-                        FillFace(cubeFaces, RIGHT_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, RIGHT_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y - 1, z) || IsEmptyBlock(x, y - 1, z, chunkBlocks)) {
-                        FillFace(cubeFaces, BOTTOM_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, BOTTOM_FACE_INDEX, blockPos, blockType);
                     }
                     if (!WithinChunk(x, y + 1, z) || IsEmptyBlock(x, y + 1, z, chunkBlocks)) {
-                        FillFace(cubeFaces, TOP_FACE_INDEX, blockPos, blockType);
+                        FillFace(cubeFaces, transParentCubeFaces, TOP_FACE_INDEX, blockPos, blockType);
                     }
                 }
             }
         }
 
+        //SortFaces(cubeFaces);
+        SortFaces(transParentCubeFaces);
         vbo.reset(new VertexBuffer(cubeFaces.data(), sizeof(CubeFace) * cubeFaces.size()));
+        transparentVbo.reset(new VertexBuffer(transParentCubeFaces.data(), sizeof(CubeFace) * transParentCubeFaces.size(), GL_DYNAMIC_DRAW));
         VertexBufferLayout layout;
         layout.Push<float>(4, true);
         layout.Push<float>(3);
@@ -61,6 +66,8 @@ namespace REngine {
         layout.Push<float>(2);
         vao.reset(new VertexArray());
         vao->AddBuffer(*vbo.get(), layout);
+        transparentVao.reset(new VertexArray());
+        transparentVao->AddBuffer(*transparentVbo.get(), layout);
 
         UpdateModelMatrix();
     }
@@ -73,6 +80,16 @@ namespace REngine {
         vbo->Bind();
         vao->Bind();
         Renderer::Draw(*vao.get(), *vbo.get(), shader);
+        vbo->UnBind();
+        vao->UnBind();
+    }
+
+    void Chunk::DrawTransparent(const Shader& shader) {
+        transparentVbo->Bind();
+        transparentVao->Bind();
+        Renderer::Draw(*transparentVao.get(), *transparentVbo.get(), shader);
+        transparentVbo->UnBind();
+        transparentVao->UnBind();
     }
 
     glm::mat4& Chunk::GetModelMatrix() {
@@ -89,11 +106,12 @@ namespace REngine {
         return false;
     }
 
-    void Chunk::FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type) {
+    void Chunk::FillFace(std::vector<CubeFace>& cubeFaces, std::vector<CubeFace>& transparentCubeFaces, uint32_t faceId, RVec3& pos, BlockType type) {
         CubeFace face;
         Cube* cube = (Cube*)Block::GetRawData();
         uint32_t atlasCoordX = 0;
         uint32_t atlasCoordY = 0;
+        bool isTransparent = false;
 
         std::memcpy(&face, &cube->cubeFaces[faceId], sizeof(CubeFace));
         for (uint8_t i = 0; i < 6; i++) {
@@ -122,6 +140,7 @@ namespace REngine {
             case Leaf:
                 atlasCoordX = BLOCK_LEAF_X;
                 atlasCoordY = BLOCK_LEAF_Y;
+                isTransparent = true;
                 break;
             default:
                 break;
@@ -133,7 +152,12 @@ namespace REngine {
             vertexPos.y += pos.y * 2;
             vertexPos.z += pos.z * 2;
         }
-        cubeFaces.push_back(face);
+        if (isTransparent) {
+            transparentCubeFaces.push_back(face);
+        }
+        else {
+            cubeFaces.push_back(face);
+        }
     }
 
     BlockType* Chunk::GenerateChunkBlocks() {
@@ -147,7 +171,7 @@ namespace REngine {
 
         for (uint32_t x = 0; x < CHUNK_SIZE_X; x++) {
             for (uint32_t z = 0; z < CHUNK_SIZE_Z; z++) {
-                height = perlin.accumulatedOctaveNoise2D_0_1((float)(x + ((int)position.x / 2)) / CHUNK_SIZE_X, 
+                height = perlin.accumulatedOctaveNoise2D_0_1((float)(x + ((int)position.x / 2)) / CHUNK_SIZE_X,
                                                              (float)(z + ((int)position.z / 2)) / CHUNK_SIZE_Z, 1) * CHUNK_SIZE_Y;
 
                 for (uint32_t y = 0; y < height; y++) {
@@ -231,6 +255,36 @@ namespace REngine {
         }
     }
 
+    void Chunk::SortFaces(std::vector<CubeFace>& cubeFaces) {
+        std::sort(cubeFaces.begin(), cubeFaces.end(),
+                  [](const CubeFace& face0, const CubeFace& face1) {
+                      Application* application = Application::Get();
+                      FPSCamera* camera = application->GetCamera();
+                      glm::vec3 cameraPos = camera->GetPosition();
+                      float dist0, dist1;
+                      glm::vec3 v00, v01, v02, v10, v11, v12;
+
+                      memcpy(&v00[0], &face0.vertexes[0].position, sizeof(float) * 3);
+                      memcpy(&v01[0], &face0.vertexes[1].position, sizeof(float) * 3);
+                      memcpy(&v02[0], &face0.vertexes[2].position, sizeof(float) * 3);
+
+                      memcpy(&v10[0], &face1.vertexes[0].position, sizeof(float) * 3);
+                      memcpy(&v11[0], &face1.vertexes[1].position, sizeof(float) * 3);
+                      memcpy(&v12[0], &face1.vertexes[2].position, sizeof(float) * 3);
+
+                      glm::vec3 n0 = glm::cross(v02 - v00, v01 - v00);
+                      n0 = glm::normalize(n0);
+
+                      glm::vec3 n1 = glm::cross(v12 - v10, v11 - v10);
+                      n1 = glm::normalize(n1);
+
+                      dist0 = std::fabs((n0.x * cameraPos.x + n0.y * cameraPos.y + n0.z * cameraPos.z) + (n0.x * v02.x + n0.y * v02.y + n0.z * v02.z)) / glm::length(n0);
+                      dist1 = std::fabs((n1.x * cameraPos.x + n1.y * cameraPos.y + n1.z * cameraPos.z) + (n1.x * v12.x + n1.y * v12.y + n1.z * v12.z)) / glm::length(n1);
+                      return dist0 > dist1;
+                  }
+        );
+    }
+
     void Chunk::Move(glm::vec3 newCoords) {
         position = newCoords;
         UpdateModelMatrix();
@@ -239,5 +293,17 @@ namespace REngine {
     void Chunk::Scale(glm::vec3 scaleVec) {
         scale = scaleVec;
         UpdateModelMatrix();
+    }
+
+    void Chunk::OnUpdate() {
+        CubeFace* vboPtr = (CubeFace*)transparentVbo->Map(GL_READ_WRITE);
+        std::vector<CubeFace> cubeFaces;
+
+        cubeFaces.reserve(transparentVbo->GetSize() / sizeof(CubeFace));
+        std::memcpy(cubeFaces.data(), vboPtr, transparentVbo->GetSize());
+
+        SortFaces(cubeFaces);
+        std::memcpy(vboPtr, cubeFaces.data(), transparentVbo->GetSize());
+        transparentVbo->UnMap();
     }
 }

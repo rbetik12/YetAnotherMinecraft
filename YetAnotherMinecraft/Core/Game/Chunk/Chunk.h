@@ -30,20 +30,24 @@ namespace REngine {
         ~Chunk();
 
         void Draw(const Shader& shader);
+        void DrawTransparent(const Shader& shader);
         glm::mat4& GetModelMatrix();
         virtual void Move(glm::vec3 newCoords) override;
         virtual void Scale(glm::vec3 scaleVec) override;
-
+        virtual void OnUpdate() override;
     private:
         std::unique_ptr<VertexArray> vao;
         std::unique_ptr<VertexBuffer> vbo;
+        std::unique_ptr<VertexArray> transparentVao;
+        std::unique_ptr<VertexBuffer> transparentVbo;
         BlockType* chunkBlocks;
-
+       
     private:
         bool WithinChunk(uint32_t x, uint32_t y, uint32_t z);
         bool IsEmptyBlock(uint32_t x, uint32_t y, uint32_t z, BlockType* chunkMap);
-        void FillFace(std::vector<CubeFace>& cubeFaces, uint32_t faceId, RVec3& pos, BlockType type);
+        void FillFace(std::vector<CubeFace>& cubeFaces, std::vector<CubeFace>& transparentCubeFaces, uint32_t faceId, RVec3& pos, BlockType type);
         BlockType* GenerateChunkBlocks();
         void GenerateTrees(BlockType* _chunkBlocks, uint32_t height, uint32_t x, uint32_t z);
+        void SortFaces(std::vector<CubeFace>& cubeFaces);
     };
 }

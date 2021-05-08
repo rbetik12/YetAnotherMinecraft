@@ -10,15 +10,17 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+// Assuming that texture size is 256x256 pixels
 const float size = 1 / 16.0f;
 
 out BLOCK_OUT {
 	vec2 texCoord;
-	vec3 faceColor;
+	vec2 atlasCoords;
 } blockOut;
 
 void main() {
 	blockOut.texCoord.x = (atlasCoords.x + texCoord.x) * size;
 	blockOut.texCoord.y = (atlasCoords.y + (1.0f - texCoord.y)) * size;
+	blockOut.atlasCoords = atlasCoords;
 	gl_Position = projection * view * model * vec4(position.xyz, 1.0f);
 }

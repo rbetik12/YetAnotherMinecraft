@@ -16,8 +16,8 @@ namespace REngine {
         else if (severity == GL_DEBUG_SEVERITY_LOW) {
             R_CORE_WARN("(OpenGL): {0}", message);
         }
-        else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        /*else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
             R_CORE_TRACE("(OpenGL): {0}", message);
-        }
+        }*/
     }
 }

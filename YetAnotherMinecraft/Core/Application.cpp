@@ -45,12 +45,14 @@ namespace REngine {
         gui.reset(ImGuiUi::Create());
 
         Shader basicShader("resources/shaders/chunk.vert", "resources/shaders/chunk.frag");
-        Texture blockAtlas("resources/textures/block-atlas.jpg");
+        Texture blockAtlas("resources/textures/block-atlas.png");
 
-        Chunk chunk(glm::vec3(0, 0, 0));
-        Chunk chunk1(glm::vec3(64, 0, 0));
-        Chunk chunk2(glm::vec3(0, 0, 64));
-        Chunk chunk3(glm::vec3(64, 0, 64));
+        Chunk chunks[] = {
+            Chunk(glm::vec3(0, 0, 0)),
+            Chunk(glm::vec3(64, 0, 0)),
+            Chunk(glm::vec3(0, 0, 64)),
+            Chunk(glm::vec3(64, 0, 64)),
+        };
 
         while (isRunning) {
             Time::OnUpdate();
@@ -65,21 +67,17 @@ namespace REngine {
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniform1i("blockTexture", 0);
-            basicShader.SetUniformMat4f("model", chunk.GetModelMatrix());
+            
+            for (int i = 0; i < 4; i++) {
+                basicShader.SetUniformMat4f("model", chunks[i].GetModelMatrix());
+                chunks[i].Draw(basicShader);
+            }
 
-            chunk.Draw(basicShader);
-
-            basicShader.SetUniformMat4f("model", chunk1.GetModelMatrix());
-
-            chunk1.Draw(basicShader);
-
-            basicShader.SetUniformMat4f("model", chunk2.GetModelMatrix());
-
-            chunk2.Draw(basicShader);
-
-            basicShader.SetUniformMat4f("model", chunk3.GetModelMatrix());
-
-            chunk3.Draw(basicShader);
+            for (int i = 0; i < 4; i++) {
+                chunks[i].OnUpdate();
+                basicShader.SetUniformMat4f("model", chunks[i].GetModelMatrix());
+                chunks[i].DrawTransparent(basicShader);
+            }
 
             gui->Begin();
             {
@@ -120,6 +118,9 @@ namespace REngine {
     }
     Window* Application::GetWindow() {
         return window.get();
+    }
+    FPSCamera* Application::GetCamera() {
+        return camera.get();
     }
     bool Application::OnWindowClose(WindowCloseEvent& e) {
         isRunning = false;
