@@ -15,6 +15,7 @@
 #include "Rendering/Texture.h"
 #include "Game/Chunk/Chunk.h"
 #include "Utils/RFloat.h"
+#include "Skybox/Skybox.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -54,6 +55,19 @@ namespace REngine {
             Chunk(glm::vec3(64, 0, 64)),
         };
 
+        std::string cubemapFaces[] = {
+            "resources/textures/cubemap/right.png",
+            "resources/textures/cubemap/left.png",
+
+            "resources/textures/cubemap/bottom.png",
+            "resources/textures/cubemap/top.png",
+
+            "resources/textures/cubemap/front.png",
+            "resources/textures/cubemap/back.png"
+        };
+
+        Skybox skybox(cubemapFaces, "resources/shaders/skybox.vert", "resources/shaders/skybox.frag");
+
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
@@ -67,11 +81,28 @@ namespace REngine {
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniform1i("blockTexture", 0);
-            
+
             for (int i = 0; i < 4; i++) {
                 basicShader.SetUniformMat4f("model", chunks[i].GetModelMatrix());
                 chunks[i].Draw(basicShader);
             }
+
+            Renderer::DepthConfig(GL_LEQUAL);
+            skybox.GetShader().Bind();
+            view = glm::mat4(glm::mat3(camera->GetViewMatrix()));
+            skybox.GetShader().SetUniformMat4f("view", view);
+            skybox.GetShader().SetUniformMat4f("projection", projection);
+            skybox.Bind();
+            skybox.Draw();
+            skybox.UnBind();
+            Renderer::DepthConfig(GL_LEQUAL);
+
+            view = camera->GetViewMatrix();
+            basicShader.Bind();
+            blockAtlas.Bind();
+            basicShader.SetUniformMat4f("projection", projection);
+            basicShader.SetUniformMat4f("view", view);
+            basicShader.SetUniform1i("blockTexture", 0);
 
             for (int i = 0; i < 4; i++) {
                 chunks[i].OnUpdate();

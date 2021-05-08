@@ -10,5 +10,6 @@ namespace REngine {
         static void Draw(const VertexArray& vao, const VertexBuffer& vbo, const Shader& shader);
         static void Draw(const VertexArray& vao, const IndexBuffer& ebo, const Shader& shader);
         static void Init();
+        static void DepthConfig(int command);
     };
 }
