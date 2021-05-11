@@ -262,24 +262,13 @@ namespace REngine {
                       FPSCamera* camera = application->GetCamera();
                       glm::vec3 cameraPos = camera->GetPosition();
                       float dist0, dist1;
-                      glm::vec3 v00, v01, v02, v10, v11, v12;
+                      glm::vec3 v00, v10;
 
                       memcpy(&v00[0], &face0.vertexes[0].position, sizeof(float) * 3);
-                      memcpy(&v01[0], &face0.vertexes[1].position, sizeof(float) * 3);
-                      memcpy(&v02[0], &face0.vertexes[2].position, sizeof(float) * 3);
-
                       memcpy(&v10[0], &face1.vertexes[0].position, sizeof(float) * 3);
-                      memcpy(&v11[0], &face1.vertexes[1].position, sizeof(float) * 3);
-                      memcpy(&v12[0], &face1.vertexes[2].position, sizeof(float) * 3);
 
-                      glm::vec3 n0 = glm::cross(v02 - v00, v01 - v00);
-                      n0 = glm::normalize(n0);
-
-                      glm::vec3 n1 = glm::cross(v12 - v10, v11 - v10);
-                      n1 = glm::normalize(n1);
-
-                      dist0 = std::fabs((n0.x * cameraPos.x + n0.y * cameraPos.y + n0.z * cameraPos.z) + (n0.x * v02.x + n0.y * v02.y + n0.z * v02.z)) / glm::length(n0);
-                      dist1 = std::fabs((n1.x * cameraPos.x + n1.y * cameraPos.y + n1.z * cameraPos.z) + (n1.x * v12.x + n1.y * v12.y + n1.z * v12.z)) / glm::length(n1);
+                      dist0 = std::fabs(v00.x - cameraPos.x) + std::fabs(v00.y - cameraPos.y) + std::fabs(v00.z - cameraPos.z);
+                      dist1 = std::fabs(v10.x - cameraPos.x) + std::fabs(v10.y - cameraPos.y) + std::fabs(v10.z - cameraPos.z);
                       return dist0 > dist1;
                   }
         );
