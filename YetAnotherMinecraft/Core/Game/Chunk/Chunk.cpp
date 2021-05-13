@@ -6,6 +6,7 @@
 #include "../../Utils/RVec.h"
 #include <PerlinNoise.hpp>
 #include "../../Application.h"
+#include <execution>
 
 #define CHUNK_SIZE_X 32
 #define CHUNK_SIZE_Y 32
@@ -256,7 +257,7 @@ namespace REngine {
     }
 
     void Chunk::SortFaces(std::vector<CubeFace>& cubeFaces) {
-        std::sort(cubeFaces.begin(), cubeFaces.end(),
+        std::sort(std::execution::par_unseq, cubeFaces.begin(), cubeFaces.end(),
                   [](const CubeFace& face0, const CubeFace& face1) {
                       Application* application = Application::Get();
                       FPSCamera* camera = application->GetCamera();
@@ -287,7 +288,7 @@ namespace REngine {
     void Chunk::OnUpdate() {
         CubeFace* vboPtr = (CubeFace*)transparentVbo->Map(GL_READ_WRITE);
         std::vector<CubeFace> cubeFaces;
-
+        
         cubeFaces.reserve(transparentVbo->GetSize() / sizeof(CubeFace));
         std::memcpy(cubeFaces.data(), vboPtr, transparentVbo->GetSize());
 

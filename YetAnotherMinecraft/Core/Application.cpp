@@ -16,6 +16,7 @@
 #include "Game/Chunk/Chunk.h"
 #include "Utils/RFloat.h"
 #include "Skybox/Skybox.h"
+#include <execution>
 
 namespace REngine {
     Application* Application::Create() {
@@ -48,7 +49,7 @@ namespace REngine {
         Shader basicShader("resources/shaders/chunk.vert", "resources/shaders/chunk.frag");
         Texture blockAtlas("resources/textures/block-atlas.png");
 
-        Chunk chunks[] = {
+        std::array<Chunk, 4> chunks = {
             Chunk(glm::vec3(0, 0, 0)),
             Chunk(glm::vec3(64, 0, 0)),
             Chunk(glm::vec3(0, 0, 64)),

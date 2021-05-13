@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "VertexArray.h"
 #include "IndexBuffer.h"
+#include <mutex>
 
 namespace REngine {
     class Renderer {
@@ -11,5 +12,9 @@ namespace REngine {
         static void Draw(const VertexArray& vao, const IndexBuffer& ebo, const Shader& shader);
         static void Init();
         static void DepthConfig(int command);
+        static void Lock();
+        static void Unlock();
+    private:
+        static std::mutex mutex;
     };
 }

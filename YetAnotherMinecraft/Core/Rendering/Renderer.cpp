@@ -26,4 +26,13 @@ namespace REngine {
     void Renderer::DepthConfig(int command) {
         glDepthFunc(command);
     }
+    void Renderer::Lock() {
+        mutex.lock();
+    }
+
+    void Renderer::Unlock() {
+        mutex.unlock();
+    }
+
+    std::mutex Renderer::mutex;
 }
