@@ -288,12 +288,23 @@ namespace REngine {
     void Chunk::OnUpdate() {
         CubeFace* vboPtr = (CubeFace*)transparentVbo->Map(GL_READ_WRITE);
         std::vector<CubeFace> cubeFaces;
-        
+
         cubeFaces.reserve(transparentVbo->GetSize() / sizeof(CubeFace));
         std::memcpy(cubeFaces.data(), vboPtr, transparentVbo->GetSize());
 
         SortFaces(cubeFaces);
+        std::reverse(cubeFaces.begin(), cubeFaces.end());
         std::memcpy(vboPtr, cubeFaces.data(), transparentVbo->GetSize());
         transparentVbo->UnMap();
+    }
+
+    bool Chunk::IsPlayerWithinChunk(glm::vec3 playerCoords) {
+        return playerCoords.x >= position.x && playerCoords.x <= position.x + CHUNK_SIZE_X * 2 &&
+               playerCoords.y >= position.y && playerCoords.y <= position.y + CHUNK_SIZE_Y * 2 &&
+               playerCoords.z >= position.z && playerCoords.z <= position.z + CHUNK_SIZE_Z * 2;
+    }
+
+    glm::vec3& Chunk::GetPosition() {
+        return position;
     }
 }

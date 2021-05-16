@@ -32,7 +32,7 @@ namespace REngine {
     void Application::Init() {
         Log::init();
         
-        window.reset(new Window(1920, 1080, "YetAnotherMinecraft"));
+        window.reset(new Window(800, 600, "YetAnotherMinecraft"));
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
         Block::Init();
@@ -46,14 +46,15 @@ namespace REngine {
     void Application::Run() {
         gui.reset(ImGuiUi::Create());
 
+        const int chunksAmount = 4;
         Shader basicShader("resources/shaders/chunk.vert", "resources/shaders/chunk.frag");
         Texture blockAtlas("resources/textures/block-atlas.png");
 
-        std::array<Chunk, 4> chunks = {
-            Chunk(glm::vec3(0, 0, 0)),
-            Chunk(glm::vec3(64, 0, 0)),
-            Chunk(glm::vec3(0, 0, 64)),
-            Chunk(glm::vec3(64, 0, 64)),
+        std::array<Chunk*, chunksAmount> chunks = {
+            new Chunk(glm::vec3(0, 0, 0)),
+            new Chunk(glm::vec3(64, 0, 0)),
+            new Chunk(glm::vec3(0, 0, 64)),
+            new Chunk(glm::vec3(64, 0, 64)),
         };
 
         std::string cubemapFaces[] = {
@@ -69,6 +70,8 @@ namespace REngine {
 
         Skybox skybox(cubemapFaces, "resources/shaders/skybox.vert", "resources/shaders/skybox.frag");
 
+        uint32_t currentChunkIndex = 0;
+
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
@@ -83,9 +86,23 @@ namespace REngine {
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniform1i("blockTexture", 0);
 
-            for (int i = 0; i < 4; i++) {
-                basicShader.SetUniformMat4f("model", chunks[i].GetModelMatrix());
-                chunks[i].Draw(basicShader);
+            std::sort(chunks.begin(), chunks.end(),
+                      [](Chunk* chunk0, Chunk* chunk1) {
+                          Application* application = Application::Get();
+                          FPSCamera* camera = application->GetCamera();
+                          glm::vec3 cameraPos = camera->GetPosition();
+                          
+                          float dist0, dist1;
+                          dist0 = std::fabs(cameraPos.x - chunk0->GetPosition().x) + std::fabs(cameraPos.y - chunk0->GetPosition().y) + std::fabs(cameraPos.z - chunk0->GetPosition().z);
+                          dist1 = std::fabs(cameraPos.x - chunk1->GetPosition().x) + std::fabs(cameraPos.y - chunk1->GetPosition().y) + std::fabs(cameraPos.z - chunk1->GetPosition().z);
+
+                          return dist0 > dist1;
+                      }
+            );
+
+            for (int i = chunksAmount - 1; i >= 0; i--) {
+                basicShader.SetUniformMat4f("model", chunks[i]->GetModelMatrix());
+                chunks[i]->Draw(basicShader);
             }
 
             Renderer::DepthConfig(GL_LEQUAL);
@@ -105,17 +122,23 @@ namespace REngine {
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniform1i("blockTexture", 0);
 
-            for (int i = 0; i < 4; i++) {
-                chunks[i].OnUpdate();
-                basicShader.SetUniformMat4f("model", chunks[i].GetModelMatrix());
-                chunks[i].DrawTransparent(basicShader);
+            for (int i = chunksAmount - 1; i >= 0; i--) {
+                if (chunks[i]->IsPlayerWithinChunk(camera->GetPosition())) {
+                    currentChunkIndex = i;
+                    chunks[i]->OnUpdate();
+                }
+                basicShader.SetUniformMat4f("model", chunks[i]->GetModelMatrix());
+                chunks[i]->DrawTransparent(basicShader);
             }
 
             gui->Begin();
             {
                 glm::vec3 prevRotation(0.0f);
+                glm::vec3 currentChunkPos(0.0f);
                 prevRotation[0] = camera->GetRotation()[0];
                 prevRotation[1] = camera->GetRotation()[1];
+
+                currentChunkPos = chunks[currentChunkIndex]->GetPosition();
 
                 ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
                 ImGui::Begin("Debug");
@@ -123,6 +146,7 @@ namespace REngine {
                 ImGui::InputFloat3("Camera position", &camera->GetPosition()[0]);
                 ImGui::InputFloat3("Camera rotation", &camera->GetRotation()[0]);
                 ImGui::SliderFloat("Movement speed", &camera->GetCameraMovementSpeed(), 50.0f, 100.0f);
+                ImGui::Text("Current chunk origin position: (%.1f, %.1f, %.1f)", currentChunkPos.x, currentChunkPos.y, currentChunkPos.z);
                 if (!camera->IsMouseCaptured()) {
                     ImGui::Text("Toggled UI mode");
                     if (!FLOAT_EQ(prevRotation[0], camera->GetRotation()[0]) || !FLOAT_EQ(prevRotation[1], camera->GetRotation()[1])) {
@@ -137,7 +161,9 @@ namespace REngine {
 
             window->OnUpdate();
         }
-
+        for (auto chunk : chunks) {
+            delete chunk;
+        }
         window->ShutDown();
     }
 

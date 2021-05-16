@@ -35,6 +35,8 @@ namespace REngine {
         virtual void Move(glm::vec3 newCoords) override;
         virtual void Scale(glm::vec3 scaleVec) override;
         virtual void OnUpdate() override;
+        bool IsPlayerWithinChunk(glm::vec3 playerCoords);
+        glm::vec3& GetPosition();
     private:
         std::unique_ptr<VertexArray> vao;
         std::unique_ptr<VertexBuffer> vbo;
