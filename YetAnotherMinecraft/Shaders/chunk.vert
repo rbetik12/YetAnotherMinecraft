@@ -16,11 +16,15 @@ const float size = 1 / 16.0f;
 out BLOCK_OUT {
 	vec2 texCoord;
 	vec2 atlasCoords;
+	vec3 tNormal;
+	vec3 fragPos;
 } blockOut;
 
 void main() {
+	blockOut.fragPos = vec3(model * vec4(position.xyz, 1.0));
 	blockOut.texCoord.x = (atlasCoords.x + texCoord.x) * size;
 	blockOut.texCoord.y = (atlasCoords.y + (1.0f - texCoord.y)) * size;
 	blockOut.atlasCoords = atlasCoords;
 	gl_Position = projection * view * model * vec4(position.xyz, 1.0f);
+	blockOut.tNormal = mat3(transpose(inverse(model))) * normal;
 }

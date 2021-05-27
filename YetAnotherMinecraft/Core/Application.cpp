@@ -17,6 +17,7 @@
 #include "Utils/RFloat.h"
 #include "Skybox/Skybox.h"
 #include <execution>
+#include "Game/Light/Light.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -32,7 +33,7 @@ namespace REngine {
     void Application::Init() {
         Log::init();
         
-        window.reset(new Window(800, 600, "YetAnotherMinecraft"));
+        window.reset(new Window(1280, 720, "YetAnotherMinecraft"));
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
         Block::Init();
@@ -72,6 +73,8 @@ namespace REngine {
 
         uint32_t currentChunkIndex = 0;
 
+        Light light;
+
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
@@ -85,7 +88,19 @@ namespace REngine {
             basicShader.SetUniformMat4f("projection", projection);
             basicShader.SetUniformMat4f("view", view);
             basicShader.SetUniform1i("blockTexture", 0);
-
+            basicShader.SetUniform3f("viewPos", camera->GetPosition().x, 
+                                                camera->GetPosition().y,
+                                                camera->GetPosition().z);
+            basicShader.SetUniform3f("directionalLight.direction", light.GetDirection().x,
+                                                                   light.GetDirection().y,
+                                                                   light.GetDirection().z);
+            basicShader.SetUniform3f("directionalLight.ambient", light.GetAmbientColor().x,
+                                                                 light.GetAmbientColor().y,
+                                                                 light.GetAmbientColor().z);
+            basicShader.SetUniform3f("directionalLight.diffuse", light.GetDiffuseColor().x,
+                                                                 light.GetDiffuseColor().y,
+                                                                 light.GetDiffuseColor().z);
+            basicShader.SetUniform3f("directionalLight.specular", 1.0f, 1.0f, 1.0f);
             std::sort(chunks.begin(), chunks.end(),
                       [](Chunk* chunk0, Chunk* chunk1) {
                           Application* application = Application::Get();
@@ -155,6 +170,12 @@ namespace REngine {
                         camera->OnEvent(e);
                     }
                 }
+                ImGui::End();
+
+                ImGui::Begin("Directional light");
+                ImGui::InputFloat3("Ambient color", &light.GetAmbientColor()[0]);
+                ImGui::InputFloat3("Diffuse color", &light.GetDiffuseColor()[0]);
+                ImGui::InputFloat3("Direction", &light.GetDirection()[0]);
                 ImGui::End();
             }
             gui->End();
