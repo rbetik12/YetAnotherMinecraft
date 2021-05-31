@@ -5,6 +5,7 @@
 #include "Events/MouseEvent.h"
 #include "UI/ImGuiUI.h"
 #include "Camera/FPSCamera.h"
+#include "Rendering/FrameBuffer.h"
 
 namespace REngine {
     class Application {
@@ -23,6 +24,7 @@ namespace REngine {
         std::unique_ptr<Window> window;
         std::unique_ptr<ImGuiUi> gui;
         std::unique_ptr<FPSCamera> camera;
+        std::unique_ptr<FrameBuffer> finalFrameBuffer;
         bool isRunning = false;
         bool OnWindowClose(WindowCloseEvent &e);
         bool OnMouseMove(MouseMovedEvent& e);

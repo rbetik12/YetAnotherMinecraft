@@ -18,6 +18,7 @@
 #include "Skybox/Skybox.h"
 #include <execution>
 #include "Game/Light/Light.h"
+#include "Rendering/FrameRenderer.h"
 
 namespace REngine {
     Application* Application::Create() {
@@ -33,7 +34,7 @@ namespace REngine {
     void Application::Init() {
         Log::init();
         
-        window.reset(new Window(1280, 720, "YetAnotherMinecraft"));
+        window.reset(new Window(1920, 1080, "YetAnotherMinecraft"));
         window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
         Debug::Init();
         Block::Init();
@@ -75,9 +76,18 @@ namespace REngine {
 
         Light light;
 
+        finalFrameBuffer.reset(new FrameBuffer(window->GetWidth(), window->GetHeight(), TextureColorPalette::RGB, FrameBufferType::All));
+        finalFrameBuffer->AddDepthStencilBuffer();
+        finalFrameBuffer->Verify();
+
+        Shader screenShader("resources/shaders/framebuffer.vert", "resources/shaders/framebuffer.frag");
+        FrameRenderer::Init();
+
         while (isRunning) {
             Time::OnUpdate();
             camera->OnUpdate();
+            finalFrameBuffer->Bind();
+            Renderer::ConfigDepthTest(true);
             Renderer::Clear();
 
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)window->GetWidth() / (GLfloat)window->GetHeight(), 0.1f, 300.0f);
@@ -180,6 +190,15 @@ namespace REngine {
             }
             gui->End();
 
+            finalFrameBuffer->UnBind();
+
+            Renderer::ConfigDepthTest(false);
+            Renderer::Clear(1.0f, 1.0f, 1.0f, 1.0f, false);
+            finalFrameBuffer->BindTexture();
+            screenShader.Bind();
+            screenShader.SetUniform1i("screenTexture", 0);
+            FrameRenderer::Draw(screenShader);
+            finalFrameBuffer->UnBindTexture();
             window->OnUpdate();
         }
         for (auto chunk : chunks) {

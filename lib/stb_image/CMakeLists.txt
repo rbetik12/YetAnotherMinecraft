@@ -3,4 +3,4 @@ project(stb_image)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(stb_image stb_image.cpp stb_image.h)
+add_library(stb_image stb_image.cpp stb_image.h stb_image_write.h)
